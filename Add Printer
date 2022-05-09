@@ -1,0 +1,41 @@
+#!/bin/sh
+
+Driver="$4"
+Name="$5"
+Location="$6"
+IP="$7"
+
+
+### Install Printers ###
+lpadmin -p "$Name" -L "$Location" -E -v ipp://$IP -P "/Library/Printers/PPDs/Contents/Resources/$Driver"
+
+#example
+#### Add "Divsion" Printer for RM 262
+#lpadmin -p Curiosity -L "Division Rm 262" -E -v lpd://143.232.75.54 -m drv:///sample.drv/generic.ppd
+
+### Check to ensure printers installed correctly ###
+lpstat -p
+
+exit 0
+
+
+
+#Allow User to add printer no need to unlock lock for Admin auth
+
+#Allow end user to add and control printers
+ 
+/usr/bin/security authorizationdb write system.preferences.printing allow
+/usr/bin/security authorizationdb write system.print.operator allow
+/usr/sbin/dseditgroup -o edit -n /Local/Default -a everyone -t group lpadmin
+/usr/sbin/dseditgroup -o edit -n /Local/Default -a everyone -t group _lpadmin
+
+
+exit 0
+
+
+#how to delete printer
+
+### Delete RM 139 Copier ###
+/usr/sbin/lpadmin -x N262_R139_Copier
+
+exit 0 
