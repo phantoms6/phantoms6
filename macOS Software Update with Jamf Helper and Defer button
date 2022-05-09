@@ -1,0 +1,40 @@
+#!/bin/bash
+
+loggedInUser=$(stat -f%Su /dev/console)
+jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
+windowType="hud"
+windowPosition="lr"
+description="There is a critical security update available for your computer. To perform the update, click 'UPDATE' to begin the update process. This update will need to restart your computer and can take upwards of 35 minutes. If you are unable to perform the update at this time, please select 'Cancel' to be prompted again tomorrow. 
+
+Want to install the updates at your convenience?
+Navigate to Applications --> Self Service --> Apple Software Update
+
+***Please save and close any work in progress before selecting 'UPDATE.'***"
+
+button1="UPDATE"
+button2="Cancel"
+icon=/Library/Application\ Support/NASA/NASAInternal/logo/NASA.icns
+title="Critical: Apple Security Update Available"
+alignDescription="left" 
+alignHeading="center"
+defaultButton="2"
+timeout="18000"
+
+# JAMF Helper window as it appears for targeted computers
+userChoice=$("$jamfHelper" -windowType "$windowType" -windowPosition "$windowPosition" -lockHUD -title "$title" -timeout "$timeout" -defaultButton "$defaultButton" -icon "$icon" -description "$description" -alignDescription "$alignDescription" -alignHeading "$alignHeading" -button1 "$button1" -button2 "$button2")
+
+# If user selects "UPDATE"
+if [ "$userChoice" == "0" ]; then
+   echo "User clicked UPDATE; now downloading and installing all available updates."
+   # Wait 5 seconds then show JAMF Helper Restart Warning Window
+   sleep 5s
+   ("$jamfHelper" -windowType "$windowType" -lockHUD -title "System Updates in Progress" -icon "$icon" -description "macOS System updates are being prepared. Your system may restart multiple times during the installation process and can take up to 35 minutes to complete. ***Please save and close any work in progress now as this system will automatically restart after the updates are prepared***" -alignDescription "$alignDescription" -alignHeading "$alignHeading" &) 
+   # Wait 5 minutes then recon and Install ALL available software and security updates   
+   jamf policy -event reconandntam 
+   sudo softwareupdate -irR --force
+   killall jamfHelper
+# If user selects "Cancel"
+elif [ "$userChoice" == "2" ]; then
+   echo "User clicked Cancel or timeout was reached; now exiting."
+   exit 0    
+fi
