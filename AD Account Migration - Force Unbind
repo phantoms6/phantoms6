@@ -1,3 +1,5 @@
+#!/bin/bash -x
+
 # Variables for use later in the script
 currUser=$(scutil <<< "show State:/Users/ConsoleUser" | awk -F': ' '/[[:space:]]+Name[[:space:]]:/ { if ( $2 != "loginwindow" ) { print $2 }}   ')
 currUserUID=$(id -u "$currUser")
