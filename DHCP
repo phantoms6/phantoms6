@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo /////////DHCP or Static////////////
+
+Services=$(/usr/sbin/networksetup -listallnetworkservices | awk '/Ethernet/')
+
+while read PORT; do
+    if [[ ! $(/usr/sbin/networksetup -getinfo "$PORT" | grep Configuration) != "DHCP" ]]; then
+        echo "$PORT is configured for Manual (Static IP)."
+    else
+        echo "$PORT is already configured for DHCP."
+    fi
+done < <(printf '%s\n' "$Services")
+
+
+echo /////////system_profiler////////////
+system_profiler SPNetworkLocationDataType
