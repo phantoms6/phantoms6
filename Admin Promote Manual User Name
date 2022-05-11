@@ -1,0 +1,10 @@
+#!/bin/bash
+
+dscl . -append /groups/admin GroupMembership support0618
+
+dscl . -append /groups/admin GroupMembership SUPPORT0618
+
+dscl . -read /Groups/admin
+
+
+exit 0
