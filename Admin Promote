@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Elevate User Account
+
+
+# Check to see if the user account has been set in Script Parameter 4. If not it will pull the current user
+if [[ ! -z "$4" ]];then
+	echo "User Account has been found in policy."
+	userAccount="$4"
+else
+	userAccount=$(scutil <<< "show State:/Users/ConsoleUser" | awk -F': ' '/[[:space:]]+Name[[:space:]]:/ { if ( $2 != "loginwindow" ) { print $2 }}  ')
+fi
+
+
+START_ACCOUNT_ELEVATION() {
+
+
+## Add the group account to the admin and wheel groups
+/usr/sbin/dseditgroup -o edit -a $userAccount -t user admin
+/usr/sbin/dseditgroup -o edit -a $userAccount -t user wheel
+
+
+echo "$userAccount has EP"
+
+
+
+# Close Self Service Window
+/usr/bin/osascript -e 'tell application "System Events" to set visible of process "Self Service" to false'
+
+/usr/bin/osascript <<-EOF
+			    tell application "System Events"
+			        activate
+			        display dialog "You now have elevated privileges to this machine" buttons {"OK"} default button 1
+			    end tell
+			EOF
+            
+# Recon to make sure information is updated		
+/usr/local/bin/jamf recon
+
+}
+
+START_ACCOUNT_ELEVATION
+
+exit 0
