@@ -1,0 +1,32 @@
+#!/bin/bash
+
+### Kickstart to clear softwareupdate load error ###
+sudo launchctl kickstart -k system/com.apple.softwareupdated
+
+loggedInUser=$(stat -f%Su /dev/console)
+jamfHelper="/Library/Application Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper"
+windowType="hud"
+windowPosition="lr"
+updateLabel="$6"
+description="The Mac OS Update listed above is required on this system. 
+
+***Please save any work in progress before selecting 'BEGIN.'***"
+
+button1="BEGIN"
+icon=/Library/Application\ Support/insert_icon.icns
+title="$5"
+alignDescription="left" 
+alignHeading="left"
+defaultButton="2"
+timeout="$4"
+url="jamfselfservice://content?entity=policy&id=1197&action=execute"
+
+# JAMF Helper window as it appears for targeted computers
+userChoice=$("$jamfHelper" -windowType "$windowType" -windowPosition "$windowPosition" -countdown -lockHUD -title "$title" -heading "$6" -alignHeading "$alignHeading" -timeout "$timeout" -icon "$icon" -description "$description" -alignDescription "$alignDescription" -button1 "$button1")
+
+# When user selects "UPDATE"
+[ "$userChoice" == "0" ] && echo "User clicked UPDATE; now downloading and installing all available updates." && jamf policy -event reconandntam && open "jamfselfservice://content?entity=policy&id=1431&action=view" 
+   
+   killall jamfHelper
+     
+exit 0
