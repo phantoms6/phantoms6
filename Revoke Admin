@@ -1,0 +1,11 @@
+#!/bin/bash
+
+userAccount=$(scutil <<< "show State:/Users/ConsoleUser" | awk -F': ' '/[[:space:]]+Name[[:space:]]:/ { if ( $2 != "loginwindow" ) { print $2 }}  ')
+
+dscl . -read /Groups/admin GroupMembership
+
+sudo dscl . -delete /Groups/admin GroupMembership $userAccount
+
+dscl . -read /Groups/admin GroupMembership
+
+sudo jamf recon
