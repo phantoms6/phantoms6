@@ -1,0 +1,7 @@
+#!/bin/bash
+
+userAccount=$(scutil <<< "show State:/Users/ConsoleUser" | awk -F': ' '/[[:space:]]+Name[[:space:]]:/ { if ( $2 != "loginwindow" ) { print $2 }}  ')
+
+/usr/libexec/PlistBuddy -c "print :Accounts:0:AccountID" /Users/$userAccount/Library/Preferences/MobileMeAccounts.plist
+
+exit
